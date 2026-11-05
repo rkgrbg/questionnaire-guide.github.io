@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Dialogue Form</title>
+<style>
+:root{--bg:#0a0d12;--panel:#10151d;--panel2:#161e2a;--line:#202b3b;--line2:#2b3a4f;--text:#e8eef6;--muted:#8d9bad;--accent:#7be3ff;--accent-soft:rgba(123,227,255,.12);--ok:#76e7ae;--warn:#ffc978;--danger:#ff8c9c;--r:14px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:16px;line-height:1.6}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px max(16px,env(safe-area-inset-right)) 14px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:center;min-width:0}
+.mark{width:14px;height:14px;margin:0 12px 0 6px;border:2px solid var(--accent);border-radius:3px;transform:rotate(45deg);flex:0 0 auto}
+.brand h1{margin:0;font-size:15px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-text{min-width:0}
+.top-actions{display:flex;gap:8px;flex:0 0 auto}
+.btn{min-height:44px;padding:0 16px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:14px;white-space:nowrap;text-decoration:none;transition:border-color .15s}
+.btn:hover{border-color:#3d5070}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px;border-radius:10px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06222b}
+.btn.ghost{background:transparent}
+.btn.danger{color:#ffc2cc}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:24px;max-width:1120px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right)) 104px max(16px,env(safe-area-inset-left));align-items:start}
+.sidebar{position:sticky;top:20px;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 40px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.progress-row{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.progress{height:6px;border-radius:99px;background:#18212e;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s ease}
+.nav{display:grid;gap:4px}
+.nav button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;padding:8px 12px;border:1px solid transparent;border-radius:10px;background:transparent;color:#a3b1c2;text-align:left;font-size:14px}
+.nav button:hover{background:var(--panel2);color:var(--text)}
+.nav button[aria-current="true"]{background:var(--panel2);border-color:var(--line2);color:#fff}
+.nav .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.nav button.complete .count{color:var(--ok)}
+.side-actions{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:16px}
+.content{min-width:0}
+.sec-head{margin:4px 0 18px}
+.kicker{margin:0 0 6px;color:var(--accent);font-size:12px;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.sec-head h2{margin:0;font-size:24px;line-height:1.3;letter-spacing:-.01em}
+.sec-head p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.qlist{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:0 18px}
+.q{padding:20px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:0}
+.q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.q-title{display:flex;gap:10px;min-width:0}
+.q-no{flex:0 0 auto;min-width:22px;padding-top:3px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.q-label{margin:0;font-size:16px;font-weight:600;line-height:1.55;overflow-wrap:anywhere}
+.req{margin-left:8px;color:var(--danger);font-size:12px;font-weight:600;white-space:nowrap}
+.q-desc{margin:6px 0 0 32px;color:var(--muted);font-size:14px}
+.q-body{margin:14px 0 0 32px}
+.q-tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0 32px}
+.q-note{margin:10px 0 0 32px}
+.q-empty{padding:20px 0;color:var(--muted)}
+.badge{flex:0 0 auto;padding:3px 10px;border:1px solid var(--line2);border-radius:999px;color:var(--muted);font-size:12px;white-space:nowrap}
+.badge.answered{color:var(--ok);border-color:rgba(118,231,174,.35)}
+.badge.required{color:var(--danger);border-color:rgba(255,140,156,.4)}
+.tool{min-height:36px;padding:0 12px;border:1px solid var(--line2);border-radius:999px;background:transparent;color:#b9c6d5;font-size:13px}
+.tool[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:#e9fbff}
+.textbox,.textarea,.select{width:100%;min-height:44px;padding:11px 13px;border:1px solid #2a384c;border-radius:12px;background:#0b1017;font-size:16px;line-height:1.5}
+.textarea{min-height:110px;resize:vertical}
+.textarea.sm{min-height:72px}
+.textbox:focus,.textarea:focus,.select:focus{outline:none;border-color:rgba(123,227,255,.6);box-shadow:0 0 0 3px rgba(123,227,255,.08)}
+.other-input{margin-top:10px}
+.choices{display:grid;gap:8px}
+.choice{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:#0c1219;cursor:pointer}
+.choice:hover{border-color:#3a4b63}
+.choice:has(input:checked){border-color:rgba(123,227,255,.55);background:var(--accent-soft)}
+.choice input{flex:0 0 auto;width:18px;height:18px;margin:3px 0 0;accent-color:var(--accent)}
+.choice span{font-size:15px;line-height:1.5}
+.scale{display:grid;grid-template-columns:repeat(auto-fit,minmax(40px,1fr));gap:8px}
+.scale-btn{min-height:44px;border:1px solid var(--line2);border-radius:10px;background:#0c1219;color:#b9c6d5;font-variant-numeric:tabular-nums}
+.scale-btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:#eafcff}
+.scale-ends{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:var(--muted);font-size:13px}
+.empty{padding:56px 8px;text-align:center;color:var(--muted)}
+.empty h2{margin:0 0 8px;color:var(--text);font-size:20px}
+.empty p{margin:0 0 20px}
+.empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.drafts{margin:36px auto 0;max-width:560px;text-align:left}
+.drafts h3{margin:0 0 10px;font-size:14px;color:var(--muted);font-weight:600}
+.draft-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.draft{flex:1;min-width:0;display:flex;justify-content:space-between;gap:12px;min-height:44px;padding:8px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--panel);text-align:left;color:var(--text)}
+.draft span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.draft span:last-child{color:var(--muted);font-size:12px;white-space:nowrap}
+.ov-tools{margin-bottom:12px}
+.ov-sec h3{margin:18px 0 6px;font-size:13px;color:var(--muted);font-weight:600}
+.ov-row{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px 0;border:0;border-top:1px solid var(--line);background:transparent;text-align:left;color:var(--text)}
+.ov-row:hover .ov-label{color:var(--accent)}
+.ov-label{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere}
+.bottombar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;align-items:center;gap:10px;padding:10px max(14px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));background:rgba(16,21,29,.97);border-top:1px solid var(--line)}
+.bottombar .btn{flex:0 0 auto;min-width:104px}
+.bar-mid{flex:1;text-align:center;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.scrim{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.55)}
+.modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.6)}
+.modal.show{display:flex}
+.modal-card{width:min(640px,100%);max-height:88vh;display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--panel);border:1px solid var(--line2);border-radius:16px}
+.modal-card h3{margin:0;font-size:17px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px}
+.notice{position:fixed;left:50%;bottom:96px;z-index:50;max-width:calc(100% - 32px);padding:10px 14px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2);font-size:14px;opacity:0;pointer-events:none;transform:translate(-50%,8px);transition:opacity .2s,transform .2s}
+.notice.show{opacity:1;transform:translate(-50%,0)}
+.notice.error{border-color:rgba(255,140,156,.5)}
+.menu-btn{display:none}
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:16px}
+  .menu-btn{display:inline-flex}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);max-height:none;border-radius:0 var(--r) var(--r) 0;z-index:30;transform:translateX(-104%);transition:transform .22s ease;padding-top:max(16px,env(safe-area-inset-top))}
+  .sidebar.open{transform:none}
+}
+@media (max-width:560px){
+  .hide-sm{display:none}
+  .brand p{display:none}
+  .sec-head h2{font-size:20px}
+  .qlist{padding:0 14px}
+  .q-head{flex-direction:column;gap:8px}
+  .q-desc,.q-body,.q-tools,.q-note,.badge{margin-left:0}
+  .q-desc{margin-left:32px}
+  .q-body,.q-tools,.q-note{margin-left:32px}
+  .bottombar .btn{min-width:0;flex:1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"></span>
+    <div class="brand-text"><h1 id="docTitle">Dialogue Form</h1><p id="docSub">本機問卷回答器</p></div>
+  </div>
+  <div class="top-actions">
+    <button class="btn sm menu-btn" id="menuBtn" type="button">章節</button>
+    <label class="btn sm primary" for="fileInput">匯入</label>
+    <input id="fileInput" type="file" accept=".json,application/json" hidden>
+    <button class="btn sm hide-sm" id="pasteBtn" type="button">貼上</button>
+    <button class="btn sm hide-sm" id="demoBtn" type="button">示範</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div>
+      <div class="progress-row"><span id="progressText">尚未載入</span><span id="progressPct">0%</span></div>
+      <div class="progress"><span id="progressBar"></span></div>
+    </div>
+    <nav class="nav" id="sectionNav" aria-label="章節"></nav>
+    <div class="side-actions">
+      <button class="btn sm" id="exportJsonBtn" type="button" disabled>匯出 JSON</button>
+      <button class="btn sm primary" id="exportMdBtn" type="button" disabled>匯出 Markdown</button>
+      <button class="btn sm ghost danger" id="resetBtn" type="button" disabled>清除本問卷回答</button>
+    </div>
+  </aside>
+  <main class="content" id="main"></main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<nav class="bottombar" id="bottomBar" hidden>
+  <button class="btn" id="prevBtn" type="button">上一區</button>
+  <span class="bar-mid" id="barMid"></span>
+  <button class="btn primary" id="nextBtn" type="button">下一區</button>
+</nav>
+
+<div class="notice" id="notice" role="status" aria-live="polite"></div>
+
+<div class="modal" id="pasteModal">
+  <div class="modal-card">
+    <h3>貼上問卷 JSON</h3>
+    <textarea class="textarea" id="pasteArea" style="min-height:280px" spellcheck="false"></textarea>
+    <div class="modal-foot">
+      <button class="btn" data-close="pasteModal" type="button">取消</button>
+      <button class="btn primary" id="loadPasteBtn" type="button">載入</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const DRAFTS_KEY = "dialogue-form-state-v2";
+  const LEGACY_KEY = "dialogue-form-state-v1";
+  const TYPES = ["text", "textarea", "radio", "checkbox", "select", "scale"];
+  const CHOICE_TYPES = ["radio", "checkbox", "select"];
+  const HANDLED = ["skipped", "not_applicable", "referenced"];
+  const OTHER = "__other__";
+  const STATUS_TEXT = { answered: "已回答", skipped: "略過", not_applicable: "不適用", referenced: "已說明於別處", unanswered: "未處理" };
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const main = $("#main");
+
+  const state = { questionnaire: null, index: new Map(), answers: {}, section: 0, view: "section", onlyOpen: false, notesOpen: new Set() };
+
+  const demo = {
+    version: "2.0",
+    id: "project-direction-001",
+    title: "專案方向確認",
+    description: "可略過、標示不適用，或補充說明。",
+    sections: [
+      { id: "goal", title: "目標", description: "先確認最終要得到的成果。", questions: [
+        { id: "goal_result", type: "textarea", label: "你最希望這次討論最後得到什麼成果？", placeholder: "例如：可執行的規格、比較結果", required: true },
+        { id: "goal_stage", type: "radio", label: "目前最接近哪個階段？", options: ["只有想法", "已有方向，需要整理", "已有規格，需要檢查", "準備直接實作"], required: true }
+      ] },
+      { id: "preference", title: "偏好", description: "幫助縮小設計空間。", questions: [
+        { id: "pref_focus", type: "checkbox", label: "你重視哪些面向？", options: ["簡潔", "速度", "功能完整", "視覺質感", "手機體驗", "容易維護"] },
+        { id: "pref_autonomy", type: "scale", label: "希望我主動替你做決策的程度？", min: 1, max: 5, minLabel: "多詢問我", maxLabel: "可直接決定" },
+        { id: "pref_device", type: "select", label: "主要使用的裝置？", options: ["手機", "電腦", "兩者皆用"] }
+      ] },
+      { id: "constraints", title: "限制", description: "必須確認的事項。", questions: [
+        { id: "limit_deadline", type: "text", label: "交付期限是哪一天？", placeholder: "例如：2026-12-01", required: true, allowSkip: false },
+        { id: "limit_hard", type: "text", label: "還有不能違反的限制嗎？", placeholder: "沒有可留空", allowNote: false }
+      ] }
+    ]
+  };
+
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const cssEsc = value => CSS.escape(String(value));
+  const pad = n => String(n).padStart(2, "0");
+  const hasValue = v => Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null && String(v).trim() !== "";
+  const blank = () => ({ status: "", value: "", other: "", note: "" });
+  const getEntry = id => state.answers[id] || blank();
+  const ensure = id => (state.answers[id] = state.answers[id] || blank());
+  const allQuestions = () => state.questionnaire ? state.questionnaire.sections.flatMap(s => s.questions) : [];
+  const allowsOther = q => CHOICE_TYPES.includes(q.type) && q.allowOther !== false;
+  const allowsFlag = (q, key) => q[key] !== false;
+
+  function statusOf(q) {
+    const entry = getEntry(q.id);
+    if (HANDLED.includes(entry.status)) return entry.status;
+    return hasValue(entry.value) ? "answered" : "";
+  }
+  const isHandled = q => statusOf(q) !== "";
+
+  function readDrafts() {
+    let store = null;
+    try { store = JSON.parse(localStorage.getItem(DRAFTS_KEY) || "null"); } catch (_) { store = null; }
+    if (!store || typeof store !== "object" || !store.drafts) {
+      store = { drafts: {} };
+      try {
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || "null");
+        if (legacy && legacy.questionnaireId) {
+          store.drafts[legacy.questionnaireId] = { questionnaire: null, answers: legacy.answers || {}, section: 0, view: "section", savedAt: legacy.savedAt || "" };
+        }
+      } catch (_) {}
+    }
+    return store;
+  }
+
+  function writeDrafts(store) {
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(store));
+  }
+
+  function save() {
+    if (!state.questionnaire) return;
+    const store = readDrafts();
+    store.drafts[state.questionnaire.id] = {
+      questionnaire: state.questionnaire,
+      answers: state.answers,
+      section: state.section,
+      view: state.view,
+      savedAt: new Date().toISOString()
+    };
+    try { writeDrafts(store); } catch (_) { toast("無法寫入本機儲存空間", true); }
+  }
+
+  function normalizeAnswers(raw, index) {
+    const out = {};
+    if (!raw || typeof raw !== "object") return out;
+    Object.keys(raw).forEach(id => {
+      if (!index.has(id)) return;
+      const v = raw[id];
+      if (v && typeof v === "object" && !Array.isArray(v)) {
+        out[id] = { status: v.status || "", value: v.value ?? "", other: v.other || "", note: v.note || "" };
+      } else {
+        out[id] = { status: hasValue(v) ? "answered" : "", value: v ?? "", other: "", note: "" };
+      }
+    });
+    return out;
+  }
+
+  function formatTime(iso) {
+    const d = new Date(iso);
+    return isNaN(d) ? "" : d.toLocaleString("zh-TW", { hour12: false });
+  }
+
+  function buildIndex(q) {
+    const map = new Map();
+    q.sections.forEach((sec, sectionIndex) => {
+      sec.questions.forEach((item, qi) => map.set(item.id, { q: item, sectionIndex, no: qi + 1 }));
+    });
+    return map;
+  }
+
+  function validate(data) {
+    if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("問卷必須是 JSON 物件");
+    if (!data.id || typeof data.id !== "string") throw new Error("缺少問卷 id");
+    if (!Array.isArray(data.sections) || !data.sections.length) throw new Error("缺少 sections");
+    const sectionIds = new Set();
+    const questionIds = new Set();
+    data.sections.forEach((sec, si) => {
+      if (!sec || !sec.id || !sec.title || !Array.isArray(sec.questions)) throw new Error(`第 ${si + 1} 個區段格式不完整`);
+      if (sectionIds.has(sec.id)) throw new Error(`區段 id 重複：${sec.id}`);
+      sectionIds.add(sec.id);
+      sec.questions.forEach((q, qi) => {
+        const where = `第 ${si + 1} 區第 ${qi + 1} 題`;
+        if (!q || !q.id || !q.type || !q.label) throw new Error(`${where} 缺少 id、type 或 label`);
+        if (questionIds.has(q.id)) throw new Error(`題目 id 重複：${q.id}`);
+        questionIds.add(q.id);
+        if (!TYPES.includes(q.type)) throw new Error(`不支援題型：${q.type}`);
+        if (CHOICE_TYPES.includes(q.type) && (!Array.isArray(q.options) || !q.options.length || q.options.some(o => typeof o !== "string" || o === OTHER))) {
+          throw new Error(`${q.id} 的 options 無效`);
+        }
+        if (q.type === "scale" && (!Number.isInteger(q.min) || !Number.isInteger(q.max) || q.max < q.min || q.max - q.min > 10)) {
+          throw new Error(`${q.id} 的 scale min/max 無效`);
+        }
+        ["required", "allowSkip", "allowNote", "allowOther"].forEach(key => {
+          if (q[key] !== undefined && typeof q[key] !== "boolean") throw new Error(`${q.id} 的 ${key} 必須是 true 或 false`);
+        });
+      });
+    });
+  }
+
+  function safeParse(raw) {
+    let data;
+    try { data = JSON.parse(raw); } catch (_) { throw new Error("JSON 格式無法解析"); }
+    validate(data);
+    return data;
+  }
+
+  function clampSection(n) {
+    return Math.max(0, Math.min(n, state.questionnaire.sections.length - 1));
+  }
+
+  function openQuestionnaire(q) {
+    const saved = readDrafts().drafts[q.id] || null;
+    state.questionnaire = q;
+    state.index = buildIndex(q);
+    state.answers = saved ? normalizeAnswers(saved.answers, state.index) : {};
+    state.section = saved && Number.isInteger(saved.section) ? clampSection(saved.section) : 0;
+    state.view = saved && saved.view === "overview" ? "overview" : "section";
+    state.onlyOpen = false;
+    state.notesOpen = new Set(Object.keys(state.answers).filter(id => state.answers[id].note));
+    save();
+    render();
+    toast(`已載入：${q.title || "未命名問卷"}`);
+  }
+
+  function render() {
+    renderMain();
+    updateChrome();
+  }
+
+  function renderMain() {
+    if (!state.questionnaire) { main.innerHTML = emptyHTML(); return; }
+    main.innerHTML = state.view === "overview" ? overviewHTML() : sectionHTML(state.section);
+  }
+
+  function emptyHTML() {
+    const drafts = Object.values(readDrafts().drafts)
+      .filter(d => d && d.questionnaire)
+      .sort((a, b) => String(b.savedAt || "").localeCompare(String(a.savedAt || "")));
+    const rows = drafts.map(d => `<div class="draft-row"><button type="button" class="draft" data-resume="${esc(d.questionnaire.id)}"><span>${esc(d.questionnaire.title || "未命名問卷")}</span><span>${esc(formatTime(d.savedAt))}</span></button><button type="button" class="btn sm ghost" data-remove-draft="${esc(d.questionnaire.id)}">刪除</button></div>`).join("");
+    return `<div class="empty">
+      <h2>尚未載入問卷</h2>
+      <p>匯入 JSON 檔，或貼上 JSON 文字。</p>
+      <div class="empty-actions">
+        <label class="btn primary" for="fileInput">匯入 JSON 檔</label>
+        <button type="button" class="btn" data-act="paste">貼上 JSON</button>
+        <button type="button" class="btn" data-act="demo">載入示範</button>
+      </div>
+      ${rows ? `<div class="drafts"><h3>本機草稿</h3>${rows}</div>` : ""}
+    </div>`;
+  }
+
+  function sectionHTML(index) {
+    const sec = state.questionnaire.sections[index];
+    const body = sec.questions.length
+      ? sec.questions.map((q, qi) => cardHTML(q, qi + 1)).join("")
+      : `<p class="q-empty">此區段沒有題目。</p>`;
+    return `<header class="sec-head">
+      <p class="kicker">${index + 1} / ${state.questionnaire.sections.length}</p>
+      <h2>${esc(sec.title)}</h2>
+      ${sec.description ? `<p>${esc(sec.description)}</p>` : ""}
+    </header>
+    <div class="qlist">${body}</div>`;
+  }
+
+  function overviewHTML() {
+    const all = allQuestions();
+    const handled = all.filter(isHandled).length;
+    const requiredOpen = all.filter(q => q.required && !isHandled(q)).length;
+    const sections = state.questionnaire.sections.map((sec, si) => {
+      const rows = sec.questions.filter(q => !state.onlyOpen || !isHandled(q));
+      if (!rows.length) return "";
+      const items = rows.map(q => `<button type="button" class="ov-row" data-goto="${esc(q.id)}"><span class="q-no">${pad(state.index.get(q.id).no)}</span><span class="ov-label">${esc(q.label)}${q.required ? '<span class="req">必填</span>' : ""}</span>${badgeHTML(q)}</button>`).join("");
+      return `<section class="ov-sec"><h3>${si + 1} · ${esc(sec.title)}</h3>${items}</section>`;
+    }).join("");
+    return `<header class="sec-head">
+      <p class="kicker">總覽</p>
+      <h2>${esc(state.questionnaire.title || "問卷")}</h2>
+      <p>已處理 ${handled} / ${all.length}${requiredOpen ? `，必填未處理 ${requiredOpen}` : ""}</p>
+    </header>
+    <div class="ov-tools"><button type="button" class="tool" data-act="toggle-open" aria-pressed="${state.onlyOpen}">只看未處理</button></div>
+    <div class="qlist">${sections || '<p class="q-empty">沒有符合條件的題目。</p>'}</div>`;
+  }
+
+  function badgeHTML(q) {
+    const status = statusOf(q);
+    if (status === "answered") return `<span class="badge answered" data-badge="${esc(q.id)}">已回答</span>`;
+    if (status) return `<span class="badge" data-badge="${esc(q.id)}">${STATUS_TEXT[status]}</span>`;
+    if (q.required) return `<span class="badge required" data-badge="${esc(q.id)}">必填・未處理</span>`;
+    return `<span class="badge" data-badge="${esc(q.id)}">未處理</span>`;
+  }
+
+  function toolHTML(id, status, label, current) {
+    return `<button type="button" class="tool" data-act="status" data-id="${esc(id)}" data-status="${status}" aria-pressed="${current === status}">${label}</button>`;
+  }
+
+  function cardHTML(q, no) {
+    const id = esc(q.id);
+    const entry = getEntry(q.id);
+    const showNote = state.notesOpen.has(q.id);
+    const tools = [];
+    if (allowsFlag(q, "allowSkip")) {
+      tools.push(toolHTML(q.id, "skipped", "略過", entry.status));
+      tools.push(toolHTML(q.id, "not_applicable", "不適用", entry.status));
+      tools.push(toolHTML(q.id, "referenced", "已說明於別處", entry.status));
+    }
+    if (allowsFlag(q, "allowNote")) {
+      tools.push(`<button type="button" class="tool" data-act="note" data-id="${id}" aria-pressed="${showNote}">備註</button>`);
+    }
+    const placeholder = entry.status === "referenced" ? "在哪裡說明（可留空）" : "備註（可留空）";
+    return `<article class="q" data-card="${id}">
+      <div class="q-head">
+        <div class="q-title"><span class="q-no">${pad(no)}</span><h3 class="q-label">${esc(q.label)}${q.required ? '<span class="req">必填</span>' : ""}</h3></div>
+        ${badgeHTML(q)}
+      </div>
+      ${q.description ? `<p class="q-desc">${esc(q.description)}</p>` : ""}
+      <div class="q-body">${controlHTML(q, entry)}</div>
+      ${tools.length ? `<div class="q-tools">${tools.join("")}</div>` : ""}
+      ${showNote ? `<div class="q-note"><textarea class="textarea sm" data-note="${id}" placeholder="${esc(placeholder)}">${esc(entry.note)}</textarea></div>` : ""}
+    </article>`;
+  }
+
+  function otherFieldHTML(q, entry, visible) {
+    return visible ? `<input class="textbox other-input" type="text" data-other="${esc(q.id)}" value="${esc(entry.other)}" placeholder="請輸入其他答案" autocomplete="off">` : "";
+  }
+
+  function choiceHTML(q, value, label, checked) {
+    const type = q.type === "radio" ? "radio" : "checkbox";
+    return `<label class="choice"><input type="${type}" name="${esc(q.id)}" data-q="${esc(q.id)}" value="${esc(value)}"${checked ? " checked" : ""}><span>${esc(label)}</span></label>`;
+  }
+
+  function controlHTML(q, entry) {
+    const id = esc(q.id);
+    const value = entry.value;
+    if (q.type === "text") {
+      return `<input class="textbox" type="text" data-q="${id}" value="${esc(value)}" placeholder="${esc(q.placeholder || "")}" autocomplete="off">`;
+    }
+    if (q.type === "textarea") {
+      return `<textarea class="textarea" data-q="${id}" placeholder="${esc(q.placeholder || "")}">${esc(value)}</textarea>`;
+    }
+    if (q.type === "select") {
+      const options = q.options.map(o => `<option value="${esc(o)}"${value === o ? " selected" : ""}>${esc(o)}</option>`).join("");
+      const other = allowsOther(q) ? `<option value="${OTHER}"${value === OTHER ? " selected" : ""}>其他（自行填寫）</option>` : "";
+      return `<select class="select" data-q="${id}"><option value="">請選擇</option>${options}${other}</select>${otherFieldHTML(q, entry, value === OTHER)}`;
+    }
+    if (q.type === "radio" || q.type === "checkbox") {
+      const picked = q.type === "radio" ? [value] : (Array.isArray(value) ? value : []);
+      const rows = q.options.map(o => choiceHTML(q, o, o, picked.includes(o)));
+      if (allowsOther(q)) rows.push(choiceHTML(q, OTHER, "其他（自行填寫）", picked.includes(OTHER)));
+      return `<div class="choices">${rows.join("")}</div>${otherFieldHTML(q, entry, picked.includes(OTHER))}`;
+    }
+    if (q.type === "scale") {
+      const current = hasValue(value) ? Number(value) : null;
+      const buttons = [];
+      for (let n = q.min; n <= q.max; n++) {
+        buttons.push(`<button type="button" class="scale-btn" data-act="scale" data-q="${id}" data-value="${n}" aria-pressed="${current === n}">${n}</button>`);
+      }
+      return `<div class="scale">${buttons.join("")}</div><div class="scale-ends"><span>${esc(q.minLabel || "")}</span><span>${esc(q.maxLabel || "")}</span></div>`;
+    }
+    return "";
+  }
+
+  function renderNav() {
+    const nav = $("#sectionNav");
+    const qn = state.questionnaire;
+    if (!qn) { nav.innerHTML = ""; return; }
+    const all = allQuestions();
+    const overview = `<button type="button" data-view="overview" ${state.view === "overview" ? 'aria-current="true"' : ""}><span>總覽</span><span class="count">${all.filter(isHandled).length}/${all.length}</span></button>`;
+    const sections = qn.sections.map((sec, i) => {
+      const total = sec.questions.length;
+      const done = sec.questions.filter(isHandled).length;
+      const current = state.view === "section" && i === state.section;
+      return `<button type="button" data-section="${i}" class="${total && done === total ? "complete" : ""}" ${current ? 'aria-current="true"' : ""}><span>${pad(i + 1)} ${esc(sec.title)}</span><span class="count">${done}/${total}</span></button>`;
+    }).join("");
+    nav.innerHTML = overview + sections;
+  }
+
+  function renderBottom() {
+    const bar = $("#bottomBar");
+    const qn = state.questionnaire;
+    const visible = Boolean(qn) && state.view === "section";
+    bar.hidden = !visible;
+    if (!visible) return;
+    $("#prevBtn").disabled = state.section === 0;
+    $("#nextBtn").textContent = state.section >= qn.sections.length - 1 ? "總覽" : "下一區";
+    $("#barMid").textContent = `${state.section + 1} / ${qn.sections.length}`;
+  }
+
+  function updateChrome() {
+    const qn = state.questionnaire;
+    const all = allQuestions();
+    const handled = all.filter(isHandled).length;
+    const pct = all.length ? Math.round(handled / all.length * 100) : 0;
+    $("#progressText").textContent = qn ? `已處理 ${handled} / ${all.length}` : "尚未載入";
+    $("#progressPct").textContent = `${pct}%`;
+    $("#progressBar").style.width = `${pct}%`;
+    $("#docTitle").textContent = qn ? (qn.title || "未命名問卷") : "Dialogue Form";
+    $("#docSub").textContent = qn ? (qn.description || "") : "本機問卷回答器";
+    $$(".side-actions button").forEach(btn => { btn.disabled = !qn; });
+    renderNav();
+    renderBottom();
+  }
+
+  function refreshCard(id) {
+    const meta = state.index.get(id);
+    const el = document.querySelector(`[data-card="${cssEsc(id)}"]`);
+    if (meta && el) el.outerHTML = cardHTML(meta.q, meta.no);
+  }
+
+  function setBadge(id) {
+    const q = state.index.get(id).q;
+    const el = document.querySelector(`[data-badge="${cssEsc(id)}"]`);
+    if (el) el.outerHTML = badgeHTML(q);
+  }
+
+  function setValue(id, value) {
+    const entry = ensure(id);
+    entry.value = value;
+    if (hasValue(value)) entry.status = "answered";
+    else if (entry.status === "answered") entry.status = "";
+  }
+
+  function readChoice(id, type) {
+    const inputs = $$(`[data-q="${cssEsc(id)}"]`, main).filter(el => el.tagName === "INPUT");
+    if (type === "radio") {
+      const hit = inputs.find(el => el.checked);
+      return hit ? hit.value : "";
+    }
+    return inputs.filter(el => el.checked).map(el => el.value);
+  }
+
+  function handleField(el) {
+    const id = el.dataset.q;
+    const q = state.index.get(id).q;
+    if (q.type === "select") setValue(id, el.value);
+    else setValue(id, readChoice(id, q.type));
+    refreshCard(id);
+    save();
+    updateChrome();
+  }
+
+  function clickStatus(id, status) {
+    const entry = ensure(id);
+    if (entry.status === status) {
+      entry.status = "";
+    } else {
+      if (hasValue(entry.value) && !confirm("這題已有答案，改為此狀態會清除答案，確定嗎？")) return;
+      entry.status = status;
+      entry.value = Array.isArray(entry.value) ? [] : "";
+      entry.other = "";
+      if (status === "referenced") state.notesOpen.add(id);
+    }
+    refreshCard(id);
+    save();
+    updateChrome();
+  }
+
+  function clickScale(id, n) {
+    const entry = ensure(id);
+    setValue(id, hasValue(entry.value) && Number(entry.value) === n ? "" : n);
+    refreshCard(id);
+    save();
+    updateChrome();
+  }
+
+  function toggleNote(id) {
+    if (state.notesOpen.has(id)) state.notesOpen.delete(id);
+    else state.notesOpen.add(id);
+    refreshCard(id);
+  }
+
+  function gotoQuestion(id) {
+    const meta = state.index.get(id);
+    if (!meta) return;
+    state.view = "section";
+    state.section = meta.sectionIndex;
+    save();
+    render();
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-card="${cssEsc(id)}"]`);
+      if (el) el.scrollIntoView({ block: "start" });
+    });
+  }
+
+  function goSection(index) {
+    state.view = "section";
+    state.section = clampSection(index);
+    save();
+    render();
+    window.scrollTo({ top: 0 });
+  }
+
+  function resumeDraft(id) {
+    const draft = readDrafts().drafts[id];
+    if (draft && draft.questionnaire) openQuestionnaire(draft.questionnaire);
+  }
+
+  function removeDraft(id) {
+    if (!confirm("刪除這份本機草稿？回答會一併刪除。")) return;
+    const store = readDrafts();
+    delete store.drafts[id];
+    try { writeDrafts(store); } catch (_) {}
+    renderMain();
+  }
+
+  function resetAnswers() {
+    if (!state.questionnaire) return;
+    if (!confirm("清除本問卷所有回答？此動作無法復原。")) return;
+    state.answers = {};
+    state.notesOpen = new Set();
+    state.section = 0;
+    state.view = "section";
+    save();
+    render();
+    toast("已清除回答");
+  }
+
+  function countStatuses(all) {
+    const counts = { total: all.length, answered: 0, skipped: 0, not_applicable: 0, referenced: 0, unanswered: 0, requiredUnanswered: 0 };
+    all.forEach(q => {
+      const s = statusOf(q) || "unanswered";
+      counts[s] += 1;
+      if (s === "unanswered" && q.required) counts.requiredUnanswered += 1;
+    });
+    return counts;
+  }
+
+  function answerText(q, entry) {
+    if (!hasValue(entry.value)) return null;
+    if (q.type === "scale") return Number(entry.value);
+    const resolve = v => v === OTHER ? (entry.other ? `其他：${entry.other}` : "其他") : v;
+    if (Array.isArray(entry.value)) return entry.value.map(resolve);
+    return resolve(entry.value);
+  }
+
+  function responseOf(q) {
+    const entry = getEntry(q.id);
+    return {
+      id: q.id,
+      question: q.label,
+      type: q.type,
+      required: Boolean(q.required),
+      status: statusOf(q) || "unanswered",
+      answer: answerText(q, entry),
+      other: entry.other || "",
+      note: entry.note || ""
+    };
+  }
+
+  function buildPayload(now) {
+    const qn = state.questionnaire;
+    return {
+      format: "dialogue-form-answers",
+      version: "2.0",
+      questionnaire: { id: qn.id, title: qn.title || "" },
+      exportedAt: now,
+      summary: countStatuses(allQuestions()),
+      sections: qn.sections.map(sec => ({ sectionId: sec.id, title: sec.title, responses: sec.questions.map(responseOf) }))
+    };
+  }
+
+  function buildMarkdown(now) {
+    const qn = state.questionnaire;
+    const c = countStatuses(allQuestions());
+    let md = `# ${qn.title || "問卷回答"}\n\n`;
+    if (qn.description) md += `${qn.description}\n\n`;
+    md += `> 匯出時間：${now}\n`;
+    md += `> 已回答 ${c.answered}、略過 ${c.skipped}、不適用 ${c.not_applicable}、已說明於別處 ${c.referenced}、未處理 ${c.unanswered}（其中必填 ${c.requiredUnanswered}）\n\n`;
+    qn.sections.forEach(sec => {
+      md += `## ${sec.title}\n\n`;
+      sec.questions.forEach(q => {
+        const r = responseOf(q);
+        const text = r.answer === null ? "（未回答）" : (Array.isArray(r.answer) ? r.answer.join("、") : String(r.answer));
+        md += `### ${q.label}${q.required ? "（必填）" : ""}\n\n`;
+        md += `狀態：${STATUS_TEXT[r.status]}\n\n`;
+        md += `${text}\n\n`;
+        if (r.note) md += `備註：${r.note}\n\n`;
+      });
+    });
+    return md;
+  }
+
+  function fileBase() {
+    const raw = String(state.questionnaire.id || state.questionnaire.title || "questionnaire");
+    return raw.replace(/[^\w一-鿿-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "questionnaire";
+  }
+
+  function download(name, text, type) {
+    const blob = new Blob([text], { type: `${type};charset=utf-8` });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function exportAnswers(type) {
+    if (!state.questionnaire) return;
+    const open = allQuestions().filter(q => !isHandled(q));
+    const requiredOpen = open.filter(q => q.required).length;
+    if (open.length && !confirm(`尚有 ${open.length} 題未處理（其中必填 ${requiredOpen} 題）。仍要匯出嗎？`)) return;
+    const now = new Date().toISOString();
+    if (type === "json") download(`${fileBase()}-answers.json`, JSON.stringify(buildPayload(now), null, 2), "application/json");
+    else download(`${fileBase()}-answers.md`, buildMarkdown(now), "text/markdown");
+    toast("已匯出");
+  }
+
+  function toast(message, error = false) {
+    const node = $("#notice");
+    node.textContent = message;
+    node.classList.toggle("error", error);
+    node.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => node.classList.remove("show"), 2400);
+  }
+
+  function openDrawer() {
+    $("#sidebar").classList.add("open");
+    $("#scrim").hidden = false;
+  }
+
+  function closeDrawer() {
+    $("#sidebar").classList.remove("open");
+    $("#scrim").hidden = true;
+  }
+
+  function openPaste() {
+    $("#pasteModal").classList.add("show");
+    $("#pasteArea").focus();
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove("show");
+  }
+
+  main.addEventListener("click", ev => {
+    const el = ev.target.closest("[data-act],[data-goto],[data-resume],[data-remove-draft]");
+    if (!el || !main.contains(el)) return;
+    if (el.dataset.resume) return resumeDraft(el.dataset.resume);
+    if (el.dataset.removeDraft) return removeDraft(el.dataset.removeDraft);
+    if (el.dataset.goto) return gotoQuestion(el.dataset.goto);
+    switch (el.dataset.act) {
+      case "status": return clickStatus(el.dataset.id, el.dataset.status);
+      case "note": return toggleNote(el.dataset.id);
+      case "scale": return clickScale(el.dataset.q, Number(el.dataset.value));
+      case "toggle-open": state.onlyOpen = !state.onlyOpen; return renderMain();
+      case "paste": return openPaste();
+      case "demo": return openQuestionnaire(demo);
+      default: return;
+    }
+  });
+
+  main.addEventListener("input", ev => {
+    const el = ev.target;
+    if (el.matches("[data-note]")) { ensure(el.dataset.note).note = el.value; save(); return; }
+    if (el.matches("[data-other]")) { ensure(el.dataset.other).other = el.value; save(); return; }
+    if (el.matches("textarea[data-q], input.textbox[data-q]")) {
+      setValue(el.dataset.q, el.value);
+      setBadge(el.dataset.q);
+      save();
+      updateChrome();
+    }
+  });
+
+  main.addEventListener("change", ev => {
+    const el = ev.target;
+    if (el.matches("input[type=radio][data-q], input[type=checkbox][data-q], select[data-q]")) handleField(el);
+  });
+
+  $("#sectionNav").addEventListener("click", ev => {
+    const btn = ev.target.closest("button");
+    if (!btn || !state.questionnaire) return;
+    if (btn.dataset.view === "overview") state.view = "overview";
+    else { state.view = "section"; state.section = Number(btn.dataset.section); }
+    closeDrawer();
+    save();
+    render();
+    window.scrollTo({ top: 0 });
+  });
+
+  $("#prevBtn").addEventListener("click", () => goSection(state.section - 1));
+  $("#nextBtn").addEventListener("click", () => {
+    if (state.section >= state.questionnaire.sections.length - 1) {
+      state.view = "overview";
+      save();
+      render();
+      window.scrollTo({ top: 0 });
+    } else {
+      goSection(state.section + 1);
+    }
+  });
+
+  $("#menuBtn").addEventListener("click", () => {
+    if ($("#sidebar").classList.contains("open")) closeDrawer();
+    else openDrawer();
+  });
+  $("#scrim").addEventListener("click", closeDrawer);
+  $("#exportJsonBtn").addEventListener("click", () => exportAnswers("json"));
+  $("#exportMdBtn").addEventListener("click", () => exportAnswers("md"));
+  $("#resetBtn").addEventListener("click", resetAnswers);
+
+  $("#fileInput").addEventListener("change", async ev => {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if (!file) return;
+    try { openQuestionnaire(safeParse(await file.text())); } catch (err) { toast(err.message, true); }
+  });
+  $("#demoBtn").addEventListener("click", () => openQuestionnaire(demo));
+  $("#pasteBtn").addEventListener("click", openPaste);
+  $("#loadPasteBtn").addEventListener("click", () => {
+    try {
+      openQuestionnaire(safeParse($("#pasteArea").value));
+      $("#pasteArea").value = "";
+      closeModal("pasteModal");
+    } catch (err) { toast(err.message, true); }
+  });
+  $$("[data-close]").forEach(btn => btn.addEventListener("click", () => closeModal(btn.dataset.close)));
+  $("#pasteModal").addEventListener("click", ev => { if (ev.target === ev.currentTarget) closeModal("pasteModal"); });
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape") { closeDrawer(); closeModal("pasteModal"); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
